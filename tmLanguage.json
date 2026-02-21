@@ -1,0 +1,113 @@
+{
+    "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+    "name": "SPL",
+    "scopeName": "source.spl",
+    "patterns": [
+        { "include": "#comments" },
+        { "include": "#strings" },
+        { "include": "#keywords" },
+        { "include": "#function_calls" },
+        { "include": "#numbers" },
+        { "include": "#function_body" }
+    ],
+    "repository": {
+        "comments": {
+            "patterns": [
+                {
+                    "name": "comment.line.double-dash.sql",
+                    "match": "--.*$"
+                },
+                {
+                    "name": "comment.block.sql",
+                    "begin": "/\\*",
+                    "end": "\\*/"
+                }
+            ]
+        },
+        "strings": {
+            "patterns": [
+                {
+                    "name": "string.quoted.double.sql",
+                    "begin": "\"",
+                    "end": "\"",
+                    "patterns": [
+                        {
+                            "name": "constant.character.escape.sql",
+                            "match": "\\\\."
+                        }
+                    ]
+                },
+                {
+                    "name": "string.quoted.single.sql",
+                    "begin": "'",
+                    "end": "'",
+                    "patterns": [
+                        {
+                            "name": "constant.character.escape.sql",
+                            "match": "\\\\."
+                        }
+                    ]
+                }
+            ]
+        },
+        "keywords": {
+            "patterns": [
+                {
+                    "name": "keyword.control.sql",
+                    "match": "(?i)\\b(SELECT|FROM|AS|WHERE|ORDER BY|ASC|DESC|IN|AND|OR|CREATE|FUNCTION|RETURNS|LIMIT)\\b"
+                },
+                {
+                    "name": "keyword.other.DML.sql",
+                    "match": "(?i)\\b(PROMPT|GENERATE|EXPLAIN|EXECUTE)\\b"
+                },
+                {
+                    "match": "(?i)\\b(WITH)\\s+(BUDGET)\\b",
+                    "captures": {
+                        "1": { "name": "keyword.control.sql" },
+                        "2": { "name": "keyword.control.sql" }
+                    }
+                },
+                {
+                    "name": "keyword.other.sql",
+                    "match": "(?i)\\b(TOKENS|USING|MODEL|CACHE|FOR|OUTPUT|TEMPERATURE|FORMAT|STORE|RESULT|PARAMS|WITH)\\b"
+                },
+                {
+                    "begin": "(?i)\\b(USING)\\s+(MODEL)\\b",
+                    "beginCaptures": {
+                        "1": { "name": "keyword.other.sql" },
+                        "2": { "name": "keyword.other.sql" }
+                    },
+                    "end": "(?i)(?=\\s*(;|WITH|CACHE))",
+                    "patterns": [
+                        {
+                            "match": "\\b[a-zA-Z_][a-zA-Z0-9_]*\\b",
+                            "name": "entity.name.type.sql"
+                        },
+                        { "include": "#strings" }
+                    ]
+                }
+            ]
+        },
+        "function_calls": {
+            "patterns": [
+                {
+                    "match": "(?i)\\b(rag|memory|context|system_role)(?=\\s*\\()",
+                    "name": "support.function.builtin.sql"
+                }
+            ]
+        },
+        "numbers": {
+            "patterns": [
+                {
+                    "name": "constant.numeric.sql",
+                    "match": "\\b[0-9]+(\\.[0-9]+)?\\b"
+                }
+            ]
+        },
+        "function_body": {
+            "begin": "\\$\\$",
+            "end": "\\$\\$",
+            "name": "string.unquoted.heredoc.sql"
+        }
+    }
+}
