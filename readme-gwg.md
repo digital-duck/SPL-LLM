@@ -170,3 +170,17 @@ Now that you have created the `tmLanguage.json` file for SPL syntax highlighting
     *   **For Detailed Instructions:**
         The official VS Code documentation provides comprehensive, up-to-date instructions on how to set up a publisher, obtain a Personal Access Token, and publish your extension to the Marketplace:
         [Publishing Extensions - Visual Studio Code Documentation](https://code.visualstudio.com/api/references/publishing-extensions)
+
+
+7. Reset git URL from https to ssh
+```bash
+git remote show origin
+# verify it is using https: 
+# * remote origin
+#  Fetch URL: https://github.com/digital-duck/SPL-LLM
+#  Push  URL: https://github.com/digital-duck/SPL-LLM
+
+# reset URL
+git remote set-url origin git@github.com:digital-duck/SPL-LLM.git
+
+```
