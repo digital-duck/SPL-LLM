@@ -92,22 +92,65 @@ Now that you have created the `tmLanguage.json` file for SPL syntax highlighting
     *   Verify that your syntax highlighting is applied correctly.
 
 5.  **Package Your Extension and Alternative Testing Method:**
-    *   **Troubleshooting `vsce package`:** You encountered an error: `"ERROR Make sure to edit the README.md file before you package or publish your extension."` This means the `vsce` tool requires the `README.md` file within your `spl-llm` extension project to contain meaningful content beyond the auto-generated template. I will update that `README.md` in the next step.
-    *   **Packaging:** Once the `README.md` is updated, you can package your extension into a `.vsix` file for distribution:
+
+    **Prerequisites:**
+    *   Install vsce (VS Code Extension CLI):
         ```bash
-        npm install -g vsce
+        npm install -g @vscode/vsce
+        ```
+
+    **Required package.json Configuration:**
+    Before packaging, ensure your `package.json` includes these required fields:
+    ```json
+    {
+      "name": "spl-llm",
+      "publisher": "digital-duck",
+      "license": "Apache-2.0",
+      "engines": {
+        "vscode": "^1.108.0"
+      },
+      "devDependencies": {
+        "@types/vscode": "^1.108.0"
+      }
+    }
+    ```
+
+    **Install Dependencies:**
+    ```bash
+    cd your-extension-directory
+    npm install
+    ```
+
+    **Packaging:**
+    *   Package your extension into a `.vsix` file:
+        ```bash
         vsce package
         ```
         This will create a `.vsix` file (e.g., `spl-llm-0.0.1.vsix`) in your project directory.
-    *   **Alternative Testing (Manual `.vsix` Installation):** If you are unable to launch the Extension Development Host using F5, you can test your syntax highlighting by manually installing the `.vsix` file:
-        *   Open your regular VS Code instance (not the development host).
-        *   Go to the Extensions view (Ctrl+Shift+X or Cmd+Shift+X).
-        *   Click on the `...` (More Actions) menu in the top-right corner of the Extensions panel.
-        *   Select "Install from VSIX..."
-        *   Browse to and select the `.vsix` file you just created.
-        *   VS Code will prompt you to reload. Click "Reload Window".
-        *   Open any of your sample `.spl` scripts from the `sample-spl-scripts` directory (e.g., `/home/wengong/projects/digital-duck/SPL-LLM/spl-llm/sample-spl-scripts`) and verify that your syntax highlighting is applied correctly.
-    *   **Important Note:** This manual `.vsix` installation is a quick way to check syntax highlighting. However, for a proper development workflow, including debugging and testing other extension features, it's highly recommended to troubleshoot and fix the issue preventing F5 from working. If you'd like me to help troubleshoot why F5 isn't launching the host window, please let me know.
+
+    **Common Issues and Solutions:**
+    *   **Error: `tsc: not found`** → Run `npm install` to install TypeScript and dependencies
+    *   **Error: `undefined_publisher.spl-llm`** → Add `"publisher": "your-publisher-name"` to package.json
+    *   **Error: VS Code version incompatibility** → Ensure `engines.vscode` matches your VS Code version
+    *   **Error: `@types/vscode greater than engines.vscode`** → Align both versions in package.json
+
+    **Installation and Testing:**
+    *   **Manual Installation:** Install the generated `.vsix` file:
+        ```bash
+        code --install-extension spl-llm-0.0.1.vsix
+        ```
+    *   **Test:** Create a `.spl` file and verify syntax highlighting works:
+        ```bash
+        echo 'PROMPT test
+        WITH BUDGET 1000 tokens
+        SELECT system_role("Assistant") AS system;' > test.spl
+        code test.spl
+        ```
+
+    **Alternative Development Testing:**
+    *   Open your extension project in VS Code
+    *   Press `F5` to launch "Extension Development Host" window
+    *   Create/open `.spl` files in the development host to test changes
 
 6.  **Publish Your Extension (Optional):**
     If you wish to share your extension with others by publishing it to the Visual Studio Code Marketplace, follow these steps. Please note that publishing requires some prerequisites and a more detailed setup than covered here.
