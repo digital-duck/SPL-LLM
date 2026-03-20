@@ -8,7 +8,7 @@
     "type": "git",
     "url": "https://github.com/digital-duck/SPL.git"
   },
-  "version": "0.0.1",
+  "version": "0.0.2",
   "engines": {
     "vscode": "^1.108.0"
   },
@@ -26,17 +26,30 @@
         "title": "Hello World"
       }
     ],
-    "languages": [{
-      "id": "spl",
-      "aliases": ["SPL", "Structured Prompt Language"],
-      "extensions": [".spl"],
-      "configuration": "./language-configuration.json"
-    }],
-    "grammars": [{
-      "language": "spl",
-      "scopeName": "source.spl",
-      "path": "./syntaxes/tmLanguage.json"
-    }]
+    "languages": [
+      {
+        "id": "spl",
+        "aliases": ["SPL", "SPL2", "spl2", "Structured Prompt Language"],
+        "extensions": [".spl"],
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "spl",
+        "scopeName": "source.spl",
+        "path": "./syntaxes/tmLanguage.json"
+      },
+      {
+        "scopeName": "markdown.spl.codeblock",
+        "path": "./syntaxes/markdown-spl.json",
+        "injectTo": ["text.html.markdown"],
+        "embeddedLanguages": {
+          "meta.embedded.block.spl":  "spl",
+          "meta.embedded.block.spl2": "spl"
+        }
+      }
+    ]
   },
   "scripts": {
     "vscode:prepublish": "npm run package",

@@ -1,0 +1,39 @@
+-- Recipe: Review Agent (SPL 2.0)
+-- Demonstrates: WORKFLOW, WHILE loop, EVALUATE branching,
+--               EXCEPTION handling, GENERATE INTO, COMMIT, @variables
+
+WORKFLOW review_agent
+  INPUT  @draft    TEXT
+  INPUT  @max_iter NUMBER
+  OUTPUT @final    TEXT
+DO
+  @quality  := 0.0;
+  @iter     := 0;
+  @current  := @draft;
+
+  WHILE @quality < 0.8 DO
+    DO
+      GENERATE rewrite(@current, style='improved') INTO @current USING MODEL 'gemma3';
+      GENERATE sentiment(@current)                 INTO @quality;
+      @iter := @iter + 1;
+    EXCEPTION
+      WHEN HallucinationDetected THEN
+        -- Retry with a stricter instruction
+        GENERATE rewrite(@current, style='factual') INTO @current;
+      WHEN ModelOverloaded THEN
+        RETRY;
+      WHEN MaxIterationsReached THEN
+        @quality := 1.0;   -- force-exit the loop
+    END;
+
+    EVALUATE
+      WHEN @iter >= @max_iter THEN
+        @quality := 1.0;
+      OTHERWISE
+        -- continue iterating
+    END;
+  END;
+
+  @final := @current;
+  COMMIT @final;
+END;

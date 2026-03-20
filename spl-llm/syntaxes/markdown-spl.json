@@ -1,0 +1,76 @@
+{
+    "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+    "name": "SPL markdown code-fence injection",
+    "scopeName": "markdown.spl.codeblock",
+    "injectionSelector": "L:text.html.markdown",
+    "patterns": [
+        { "include": "#spl-fence" },
+        { "include": "#spl2-fence" },
+        { "include": "#prompt-fence" },
+        { "include": "#user-fence" }
+    ],
+    "repository": {
+        "spl-fence": {
+            "comment": "```spl ... ``` — highlight with full SPL grammar",
+            "begin": "(^|\\G)(\\s*)(```|~~~)(\\s*spl\\s*$)",
+            "name": "markup.fenced_code.block.markdown",
+            "beginCaptures": {
+                "3": { "name": "punctuation.definition.markdown" },
+                "4": { "name": "fenced_code.block.language.markdown" }
+            },
+            "end": "(^|\\G)(\\2|\\s{0,3})(```|~~~)\\s*$",
+            "endCaptures": {
+                "3": { "name": "punctuation.definition.markdown" }
+            },
+            "contentName": "meta.embedded.block.spl",
+            "patterns": [
+                { "include": "source.spl" }
+            ]
+        },
+        "spl2-fence": {
+            "comment": "```spl2 ... ``` — highlight with full SPL 2.0 grammar",
+            "begin": "(^|\\G)(\\s*)(```|~~~)(\\s*spl2\\s*$)",
+            "name": "markup.fenced_code.block.markdown",
+            "beginCaptures": {
+                "3": { "name": "punctuation.definition.markdown" },
+                "4": { "name": "fenced_code.block.language.markdown" }
+            },
+            "end": "(^|\\G)(\\2|\\s{0,3})(```|~~~)\\s*$",
+            "endCaptures": {
+                "3": { "name": "punctuation.definition.markdown" }
+            },
+            "contentName": "meta.embedded.block.spl2",
+            "patterns": [
+                { "include": "source.spl" }
+            ]
+        },
+        "prompt-fence": {
+            "comment": "```prompt ... ``` — user prompt text block (distinctive styling)",
+            "begin": "(^|\\G)(\\s*)(```|~~~)(\\s*prompt\\s*$)",
+            "name": "markup.fenced_code.block.markdown",
+            "beginCaptures": {
+                "3": { "name": "punctuation.definition.markdown" },
+                "4": { "name": "markup.heading.prompt.spl fenced_code.block.language.markdown" }
+            },
+            "end": "(^|\\G)(\\2|\\s{0,3})(```|~~~)\\s*$",
+            "endCaptures": {
+                "3": { "name": "punctuation.definition.markdown" }
+            },
+            "contentName": "meta.embedded.block.prompt string.other.prompt.spl"
+        },
+        "user-fence": {
+            "comment": "```User ... ``` — user message block (distinctive styling)",
+            "begin": "(^|\\G)(\\s*)(```|~~~)(\\s*[Uu]ser\\s*$)",
+            "name": "markup.fenced_code.block.markdown",
+            "beginCaptures": {
+                "3": { "name": "punctuation.definition.markdown" },
+                "4": { "name": "markup.heading.user.spl fenced_code.block.language.markdown" }
+            },
+            "end": "(^|\\G)(\\2|\\s{0,3})(```|~~~)\\s*$",
+            "endCaptures": {
+                "3": { "name": "punctuation.definition.markdown" }
+            },
+            "contentName": "meta.embedded.block.user string.other.user-message.spl"
+        }
+    }
+}
