@@ -4,7 +4,9 @@
     "scopeName": "source.spl",
     "patterns": [
         { "include": "#comments" },
+        { "include": "#fstrings" },
         { "include": "#strings" },
+        { "include": "#constants" },
         { "include": "#variables" },
         { "include": "#exception_types" },
         { "include": "#types" },
@@ -22,14 +24,79 @@
                     "match": "--.*$"
                 },
                 {
+                    "name": "comment.line.number-sign.spl",
+                    "match": "#.*$"
+                },
+                {
                     "name": "comment.block.spl",
                     "begin": "/\\*",
                     "end": "\\*/"
                 }
             ]
         },
+        "fstrings": {
+            "patterns": [
+                {
+                    "comment": "SPL 2.0 triple-quoted f-string: f\"\"\"...\"\"\"",
+                    "name": "string.quoted.triple.fstring.spl",
+                    "begin": "[fF]\"\"\"",
+                    "end": "\"\"\"",
+                    "patterns": [
+                        {
+                            "match": "\\{(@[a-zA-Z_][a-zA-Z0-9_]*)\\}",
+                            "captures": { "1": { "name": "variable.other.spl" } }
+                        },
+                        { "name": "constant.character.escape.spl", "match": "\\\\." }
+                    ]
+                },
+                {
+                    "comment": "SPL 2.0 f-string with double quotes: f\"...\"",
+                    "name": "string.quoted.double.fstring.spl",
+                    "begin": "[fF]\"",
+                    "end": "\"",
+                    "patterns": [
+                        {
+                            "match": "\\{(@[a-zA-Z_][a-zA-Z0-9_]*)\\}",
+                            "captures": { "1": { "name": "variable.other.spl" } }
+                        },
+                        { "name": "constant.character.escape.spl", "match": "\\\\." }
+                    ]
+                },
+                {
+                    "comment": "SPL 2.0 f-string with single quotes: f'...'",
+                    "name": "string.quoted.single.fstring.spl",
+                    "begin": "[fF]'",
+                    "end": "'",
+                    "patterns": [
+                        {
+                            "match": "\\{(@[a-zA-Z_][a-zA-Z0-9_]*)\\}",
+                            "captures": { "1": { "name": "variable.other.spl" } }
+                        },
+                        { "name": "constant.character.escape.spl", "match": "\\\\." }
+                    ]
+                }
+            ]
+        },
         "strings": {
             "patterns": [
+                {
+                    "comment": "Triple-quoted double string",
+                    "name": "string.quoted.triple.double.spl",
+                    "begin": "\"\"\"",
+                    "end": "\"\"\"",
+                    "patterns": [
+                        { "name": "constant.character.escape.spl", "match": "\\\\." }
+                    ]
+                },
+                {
+                    "comment": "Triple-quoted single string",
+                    "name": "string.quoted.triple.single.spl",
+                    "begin": "'''",
+                    "end": "'''",
+                    "patterns": [
+                        { "name": "constant.character.escape.spl", "match": "\\\\." }
+                    ]
+                },
                 {
                     "name": "string.quoted.double.spl",
                     "begin": "\"",
@@ -45,6 +112,15 @@
                     "patterns": [
                         { "name": "constant.character.escape.spl", "match": "\\\\." }
                     ]
+                }
+            ]
+        },
+        "constants": {
+            "patterns": [
+                {
+                    "comment": "Boolean and null constants",
+                    "name": "constant.language.spl",
+                    "match": "(?i)\\b(TRUE|FALSE|NONE)\\b"
                 }
             ]
         },
@@ -68,9 +144,14 @@
         "exception_types": {
             "patterns": [
                 {
-                    "comment": "SPL 2.0 built-in exception type names",
+                    "comment": "SPL 2.0 built-in CamelCase exception type names",
                     "name": "support.type.exception.spl",
-                    "match": "\\b(HallucinationDetected|RefusalToAnswer|ContextLengthExceeded|ModelOverloaded|QualityBelowThreshold|MaxIterationsReached|BudgetExceeded|NodeUnavailable)\\b"
+                    "match": "\\b(HallucinationDetected|RefusalToAnswer|ContextLengthExceeded|ModelOverloaded|QualityBelowThreshold|MaxIterationsReached|BudgetExceeded|NodeUnavailable|GenerationError)\\b"
+                },
+                {
+                    "comment": "SPL 2.0 exception category keywords",
+                    "name": "support.type.exception.spl",
+                    "match": "(?i)\\b(HALLUCINATION|REFUSAL|OVERFLOW|ITERATIONS|OTHERS)\\b"
                 }
             ]
         },
@@ -79,7 +160,7 @@
                 {
                     "comment": "SPL 2.0 data types used in INPUT/OUTPUT/RETURNS declarations",
                     "name": "support.type.spl",
-                    "match": "(?i)\\b(TEXT|NUMBER|BOOLEAN|LIST|JSON)\\b"
+                    "match": "(?i)\\b(TEXT|NUMBER|BOOLEAN|LIST|JSON|IMAGE)\\b"
                 }
             ]
         },
@@ -88,7 +169,7 @@
                 {
                     "comment": "Top-level statement declarations",
                     "name": "keyword.declaration.spl",
-                    "match": "(?i)\\b(PROMPT|WORKFLOW|PROCEDURE)\\b"
+                    "match": "(?i)\\b(PROMPT|WORKFLOW|PROCEDURE|IMPORT)\\b"
                 },
                 {
                     "comment": "CREATE FUNCTION / CREATE PROCEDURE",
@@ -101,7 +182,7 @@
                 {
                     "comment": "SPL 2.0 workflow control-flow keywords",
                     "name": "keyword.control.flow.spl",
-                    "match": "(?i)\\b(DO|END|EVALUATE|WHEN|THEN|OTHERWISE|WHILE|CALL|COMMIT|RAISE|RETRY|EXCEPTION|INPUT|OUTPUT|INTO)\\b"
+                    "match": "(?i)\\b(DO|END|EVALUATE|WHEN|THEN|OTHERWISE|ELSE|WHILE|CALL|PARALLEL|COMMIT|ROLLBACK|BEGIN|RAISE|RETRY|EXCEPTION|INPUT|OUTPUT|INTO|RETURN|FOR)\\b"
                 },
                 {
                     "comment": "SELECT/FROM query clause keywords",
@@ -147,9 +228,37 @@
                     ]
                 },
                 {
-                    "comment": "Token / output / temperature option keywords",
+                    "comment": "LOGGING ... LEVEL keyword pair",
+                    "match": "(?i)\\b(LOGGING)\\b",
+                    "name": "keyword.other.spl"
+                },
+                {
+                    "comment": "LEVEL <severity> after LOGGING",
+                    "match": "(?i)\\b(LEVEL)\\s+(INFO|DEBUG|WARN|WARNING|ERROR|CRITICAL)\\b",
+                    "captures": {
+                        "1": { "name": "keyword.other.spl" },
+                        "2": { "name": "support.constant.log-level.spl" }
+                    }
+                },
+                {
+                    "comment": "Transaction and error-handling keywords",
                     "name": "keyword.other.spl",
-                    "match": "(?i)\\b(TOKENS|MODEL|CACHE|OUTPUT|TEMPERATURE|FORMAT|STORE|RESULT|PARAMS|WITH|BUDGET|RETURNS|USING)\\b"
+                    "match": "(?i)\\b(TRANSACTION|ON\\s+ERROR|ON|ERROR)\\b"
+                },
+                {
+                    "comment": "Security / accounting policy keywords",
+                    "name": "keyword.other.spl",
+                    "match": "(?i)\\b(SECURITY|ACCOUNTING|CLASSIFICATION|LABELS)\\b"
+                },
+                {
+                    "comment": "SPL 1.0 materialized view / storage keywords",
+                    "name": "keyword.other.spl",
+                    "match": "(?i)\\b(AUTO_COMPRESS|COMPRESSION_STRATEGY|SCHEMA|VERSION|REFRESH|EVERY|MATERIALIZED|GRID|VRAM)\\b"
+                },
+                {
+                    "comment": "Token / output / configuration option keywords",
+                    "name": "keyword.other.spl",
+                    "match": "(?i)\\b(TOKENS|MODEL|CACHE|OUTPUT|TEMPERATURE|FORMAT|STORE|RESULT|PARAMS|WITH|BUDGET|RETURNS|USING|SET|DEFAULT|TO|LEVEL)\\b"
                 }
             ]
         },
@@ -157,12 +266,12 @@
             "patterns": [
                 {
                     "comment": "SPL 2.0 built-in generation functions",
-                    "match": "(?i)\\b(summarize|translate|classify|extract_entities|sentiment|answer|rewrite|generate_code|greeting)(?=\\s*\\()",
+                    "match": "(?i)\\b(summarize|translate|classify|extract_entities|sentiment|answer|rewrite|generate_code|greeting|quality_judge|quality_check)(?=\\s*\\()",
                     "name": "support.function.builtin.spl"
                 },
                 {
-                    "comment": "Context, memory, and utility functions",
-                    "match": "(?i)\\b(system_role|rag)(?=\\s*\\()",
+                    "comment": "Context, memory, utility, and predicate functions",
+                    "match": "(?i)\\b(system_role|rag|contains|length|upper|lower|trim|coalesce)(?=\\s*\\()",
                     "name": "support.function.builtin.spl"
                 }
             ]
@@ -178,7 +287,17 @@
         "operators": {
             "patterns": [
                 {
-                    "comment": "SPL 2.0 variable assignment := ",
+                    "comment": "String concatenation operator ||",
+                    "name": "keyword.operator.concatenation.spl",
+                    "match": "\\|\\|"
+                },
+                {
+                    "comment": "Pipe operator |",
+                    "name": "keyword.operator.pipe.spl",
+                    "match": "\\|"
+                },
+                {
+                    "comment": "SPL 2.0 variable assignment :=",
                     "name": "keyword.operator.assignment.spl",
                     "match": ":="
                 },
@@ -188,9 +307,19 @@
                     "match": "(>=|<=|!=|<>|=|>|<)"
                 },
                 {
+                    "comment": "Arithmetic operators",
+                    "name": "keyword.operator.arithmetic.spl",
+                    "match": "[+\\-*/%]"
+                },
+                {
                     "comment": "Statement terminator",
                     "name": "punctuation.terminator.statement.spl",
                     "match": ";"
+                },
+                {
+                    "comment": "Colon separator",
+                    "name": "punctuation.separator.colon.spl",
+                    "match": ":"
                 }
             ]
         },
@@ -203,7 +332,9 @@
             "name": "meta.embedded.function-body.spl",
             "patterns": [
                 { "include": "#comments" },
+                { "include": "#fstrings" },
                 { "include": "#strings" },
+                { "include": "#constants" },
                 { "include": "#variables" },
                 { "include": "#keywords" },
                 { "include": "#function_calls" },
