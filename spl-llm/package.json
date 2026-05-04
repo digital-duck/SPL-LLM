@@ -29,7 +29,7 @@
     "languages": [
       {
         "id": "spl",
-        "aliases": ["SPL", "SPL2", "spl2", "Structured Prompt Language"],
+        "aliases": ["SPL", "SPL2", "spl2", "SPL3", "spl3", "Structured Prompt Language"],
         "extensions": [".spl"],
         "configuration": "./language-configuration.json"
       }
@@ -46,7 +46,8 @@
         "injectTo": ["text.html.markdown"],
         "embeddedLanguages": {
           "meta.embedded.block.spl":  "spl",
-          "meta.embedded.block.spl2": "spl"
+          "meta.embedded.block.spl2": "spl",
+          "meta.embedded.block.spl3": "spl"
         }
       }
     ]

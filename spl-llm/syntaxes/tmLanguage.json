@@ -151,8 +151,8 @@
                     "match": "@[a-zA-Z_][a-zA-Z0-9_]*"
                 },
                 {
-                    "comment": "memory.key and context.field dotted access",
-                    "match": "\\b(memory|context)\\.([a-zA-Z_][a-zA-Z0-9_]*)",
+                    "comment": "memory.key, context.field, and rag.query dotted access",
+                    "match": "\\b(memory|context|rag)\\.([a-zA-Z_][a-zA-Z0-9_]*)",
                     "captures": {
                         "1": { "name": "support.variable.namespace.spl" },
                         "2": { "name": "variable.other.member.spl" }
@@ -165,7 +165,7 @@
                 {
                     "comment": "SPL built-in CamelCase exception type names",
                     "name": "support.type.exception.spl",
-                    "match": "\\b(HallucinationDetected|RefusalToAnswer|ContextLengthExceeded|ModelOverloaded|QualityBelowThreshold|MaxIterationsReached|BudgetExceeded|NodeUnavailable|GenerationError|ValueError|TypeError|RuntimeError|TimeoutError)\\b"
+                    "match": "\\b(HallucinationDetected|RefusalToAnswer|ContextLengthExceeded|ModelOverloaded|ModelUnavailable|QualityBelowThreshold|MaxIterationsReached|BudgetExceeded|NodeUnavailable|GenerationError|SearchFailed|FileNotFound|ToolError|ValueError|TypeError|RuntimeError|TimeoutError)\\b"
                 },
                 {
                     "comment": "SPL exception category keywords",
@@ -179,7 +179,7 @@
                 {
                     "comment": "SPL data types in INPUT/OUTPUT/RETURNS declarations",
                     "name": "support.type.spl",
-                    "match": "(?i)\\b(TEXT|STRING|NUMBER|INTEGER|FLOAT|BOOLEAN|LIST|MATRIX|VECTOR|INDEX|DOCUMENT|DICT|JSON|IMAGE|ANY)\\b"
+                    "match": "(?i)\\b(TEXT|STRING|NUMBER|INT|INTEGER|FLOAT|BOOL|BOOLEAN|LIST|SET|MAP|MATRIX|VECTOR|INDEX|DOCUMENT|DICT|JSON|IMAGE|AUDIO|VIDEO|STORAGE|ANY)\\b"
                 }
             ]
         },
@@ -282,7 +282,12 @@
                 {
                     "comment": "Miscellaneous configuration keywords",
                     "name": "keyword.other.spl",
-                    "match": "(?i)\\b(TOKENS|MODEL|CACHE|TEMPERATURE|FORMAT|PARAMS|BUDGET|SET|DEFAULT|TO|COMMIT|ROLLBACK|TRANSACTION|ON|ERROR|SECURITY|ACCOUNTING)\\b"
+                    "match": "(?i)\\b(TOKENS|MODEL|CACHE|TEMPERATURE|FORMAT|PARAMS|BUDGET|SET|DEFAULT|TO|COMMIT|ROLLBACK|TRANSACTION|ON|ERROR|SECURITY|ACCOUNTING|CLASSIFICATION|LABELS)\\b"
+                },
+                {
+                    "comment": "SPL 1.0 extended / materialized-view keywords",
+                    "name": "keyword.other.spl",
+                    "match": "(?i)\\b(AUTO_COMPRESS|COMPRESSION_STRATEGY|SCHEMA|VERSION|REFRESH|EVERY|MATERIALIZED|GRID|VRAM)\\b"
                 }
             ]
         },
@@ -290,18 +295,78 @@
             "patterns": [
                 {
                     "comment": "Built-in LLM generation functions",
-                    "match": "(?i)\\b(summarize|translate|classify|extract_entities|sentiment|answer|rewrite|generate_code|greeting|quality_judge|quality_check)(?=\\s*\\()",
+                    "match": "(?i)\\b(summarize|translate|classify|extract_entities|sentiment|answer|rewrite|generate_code|greeting|quality_judge|quality_check|truncate|system_role)(?=\\s*\\()",
                     "name": "support.function.builtin.spl"
                 },
                 {
-                    "comment": "Built-in tool / stdlib functions",
-                    "match": "(?i)\\b(web_search|search_web|http_get|write_file|read_file|run_python|chunk_documents|embed_documents|embed_query|create_faiss_index|search_index|retrieve_document)(?=\\s*\\()",
+                    "comment": "List operations",
+                    "match": "(?i)\\b(list|list_get|list_length|list_append|list_concat|list_count|list_join|list_contains|get|append|count|join|trim_turns)(?=\\s*\\()",
+                    "name": "support.function.builtin.spl"
+                },
+                {
+                    "comment": "Map operations",
+                    "match": "(?i)\\b(map|map_get|map_set|map_keys|map_values|map_merge|map_has|map_delete)(?=\\s*\\()",
+                    "name": "support.function.builtin.spl"
+                },
+                {
+                    "comment": "Type conversion functions",
+                    "match": "(?i)\\b(to_int|to_float|to_text|to_bool|len|len_val)(?=\\s*\\()",
+                    "name": "support.function.builtin.spl"
+                },
+                {
+                    "comment": "String functions",
+                    "match": "(?i)\\b(upper|lower|trim|ltrim|rtrim|length|substr|replace|concat|instr|lpad|rpad|split_part|reverse)(?=\\s*\\()",
+                    "name": "support.function.builtin.spl"
+                },
+                {
+                    "comment": "Pattern matching functions",
+                    "match": "(?i)\\b(like|startswith|endswith|contains|regexp_match)(?=\\s*\\()",
+                    "name": "support.function.builtin.spl"
+                },
+                {
+                    "comment": "Numeric functions",
+                    "match": "(?i)\\b(abs_val|round_val|ceil_val|floor_val|mod_val|power_val|sqrt_val|sign_val|clamp)(?=\\s*\\()",
+                    "name": "support.function.builtin.spl"
+                },
+                {
+                    "comment": "Conditional and null-handling functions",
+                    "match": "(?i)\\b(coalesce|nullif|iif|isnull|nvl|isblank)(?=\\s*\\()",
+                    "name": "support.function.builtin.spl"
+                },
+                {
+                    "comment": "Text aggregate functions",
+                    "match": "(?i)\\b(word_count|char_count|line_count)(?=\\s*\\()",
+                    "name": "support.function.builtin.spl"
+                },
+                {
+                    "comment": "JSON functions",
+                    "match": "(?i)\\b(json_get|json_set|json_keys|json_length|json_pretty)(?=\\s*\\()",
+                    "name": "support.function.builtin.spl"
+                },
+                {
+                    "comment": "Date and time functions",
+                    "match": "(?i)\\b(now_iso|date_format_val|date_diff_days)(?=\\s*\\()",
+                    "name": "support.function.builtin.spl"
+                },
+                {
+                    "comment": "Hashing functions",
+                    "match": "(?i)\\b(md5_hash|sha256_hash)(?=\\s*\\()",
+                    "name": "support.function.builtin.spl"
+                },
+                {
+                    "comment": "Agentic / network tool functions",
+                    "match": "(?i)\\b(web_search|search_web|http_get|run_python)(?=\\s*\\()",
                     "name": "support.function.tool.spl"
                 },
                 {
-                    "comment": "Utility and predicate functions",
-                    "match": "(?i)\\b(system_role|rag|contains|length|upper|lower|trim|coalesce)(?=\\s*\\()",
-                    "name": "support.function.builtin.spl"
+                    "comment": "File I/O tool functions",
+                    "match": "(?i)\\b(write_file|read_file|file_exists|make_dir|path_join)(?=\\s*\\()",
+                    "name": "support.function.tool.spl"
+                },
+                {
+                    "comment": "RAG / vector-store tool functions",
+                    "match": "(?i)\\b(chunk_documents|embed_documents|embed_query|create_faiss_index|search_index|retrieve_document)(?=\\s*\\()",
+                    "name": "support.function.tool.spl"
                 }
             ]
         },
@@ -334,6 +399,11 @@
                     "comment": "Arithmetic operators",
                     "name": "keyword.operator.arithmetic.spl",
                     "match": "[+\\-*/%]"
+                },
+                {
+                    "comment": "Tilde — semantic similarity operator",
+                    "name": "keyword.operator.semantic.spl",
+                    "match": "~"
                 },
                 {
                     "comment": "Statement terminator",

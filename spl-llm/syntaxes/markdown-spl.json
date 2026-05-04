@@ -6,6 +6,7 @@
     "patterns": [
         { "include": "#spl-fence" },
         { "include": "#spl2-fence" },
+        { "include": "#spl3-fence" },
         { "include": "#prompt-fence" },
         { "include": "#user-fence" }
     ],
@@ -23,6 +24,23 @@
                 "3": { "name": "punctuation.definition.markdown" }
             },
             "contentName": "meta.embedded.block.spl",
+            "patterns": [
+                { "include": "source.spl" }
+            ]
+        },
+        "spl3-fence": {
+            "comment": "```spl3 ... ``` — highlight with full SPL 3.0 grammar",
+            "begin": "(^|\\G)(\\s*)(```|~~~)(\\s*spl3\\s*$)",
+            "name": "markup.fenced_code.block.markdown",
+            "beginCaptures": {
+                "3": { "name": "punctuation.definition.markdown" },
+                "4": { "name": "fenced_code.block.language.markdown" }
+            },
+            "end": "(^|\\G)(\\2|\\s{0,3})(```|~~~)\\s*$",
+            "endCaptures": {
+                "3": { "name": "punctuation.definition.markdown" }
+            },
+            "contentName": "meta.embedded.block.spl3",
             "patterns": [
                 { "include": "source.spl" }
             ]

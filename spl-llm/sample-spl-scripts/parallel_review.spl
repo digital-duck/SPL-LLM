@@ -1,0 +1,58 @@
+-- Recipe: Parallel Code Review (SPL 3.0)
+-- Demonstrates: IMPORT, CALL PARALLEL, INPUT: syntax, new exception types,
+--               f-strings, list_append, map operations, RETURN WITH status=
+
+IMPORT '00_style_review'
+IMPORT '01_security_audit'
+
+CREATE FUNCTION merge_reviews(style TEXT, security TEXT) RETURN TEXT
+AS $$
+You are a senior engineer consolidating two code review reports.
+
+Style Review:
+{style}
+
+Security Audit:
+{security}
+
+Output a prioritised action plan. Critical issues first.
+$$;
+
+WORKFLOW parallel_review
+    INPUT:
+        @code         TEXT,
+        @lang         TEXT    DEFAULT 'python',
+        @review_model TEXT    DEFAULT 'gemma4',
+        @log_dir      TEXT    DEFAULT 'logs'
+    OUTPUT: @report TEXT
+DO
+    LOGGING f'[parallel_review] starting | lang={@lang} model={@review_model}' LEVEL INFO
+
+    -- Fan-out: run both reviewers concurrently
+    CALL PARALLEL
+        style_review   (@code, lang=@lang, review_model=@review_model) INTO @style_fb,
+        security_audit (@code, lang=@lang, review_model=@review_model) INTO @sec_fb
+    END
+
+    LOGGING '[parallel_review] parallel checks done — merging' LEVEL INFO
+
+    GENERATE merge_reviews(@style_fb, @sec_fb)
+        WITH OUTPUT BUDGET 1024 TOKENS
+        USING MODEL @review_model
+        INTO @report
+
+    CALL write_file(f'{@log_dir}/report.md', @report) INTO NONE
+    LOGGING f'[parallel_review] report saved | len={len(@report)}' LEVEL INFO
+
+    RETURN @report WITH status = 'complete'
+
+EXCEPTION
+    WHEN ModelUnavailable THEN
+        LOGGING f'[parallel_review] model unavailable: {@review_model}' LEVEL ERROR
+        RETURN '[ERROR] Model unavailable.' WITH status = 'failed'
+    WHEN BudgetExceeded THEN
+        LOGGING '[parallel_review] budget exceeded' LEVEL WARN
+        RETURN @report WITH status = 'truncated'
+    WHEN SearchFailed THEN
+        RETURN '[ERROR] Tool call failed.' WITH status = 'error'
+END
