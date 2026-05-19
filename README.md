@@ -1,30 +1,63 @@
 # SPL-LLM
-VS Code Extension for SPL and SPL-flow development
 
+VS Code extension for **SPL (Structured Prompt Language)** — a declarative language for
+designing, running, and evaluating LLM workflows.
 
-## Setup
+> SPL is to LLM workflows what SQL is to databases: structured, human-readable, and
+> runtime-agnostic. The same `.spl` file runs on any supported adapter (Claude, OpenAI,
+> Ollama, OpenRouter, …) without changes — DODA: Design Once, Deploy Anywhere.
+
+---
+
+## What's inside
+
+```
+SPL-LLM/
+├── spl-llm/              # VS Code extension source
+│   ├── src/extension.ts  # Hover docs + validate-on-save
+│   ├── syntaxes/         # TextMate grammar (tmLanguage.json) + Markdown injection
+│   ├── language-configuration.json
+│   ├── package.json
+│   └── spl-llm-0.0.4.vsix   # Latest packaged extension
+└── tmLanguage.json       # Standalone grammar (for other editors)
+```
+
+## Quick install
+
+```bash
+code --install-extension spl-llm/spl-llm-0.0.4.vsix
+```
+
+Reload VS Code (`Ctrl+Shift+P` → **Developer: Reload Window**).
+
+## Features at a glance
+
+| Feature | Details |
+|---------|---------|
+| Syntax highlighting | Keywords, `@variables`, `$$...$$` prompt bodies, f-strings, comments, built-in functions |
+| Hover docs | All SPL 3.0 keywords — description + usage example |
+| Validate on save | Runs `spl3 validate` on every `.spl` save; shows inline squiggles |
+| Semantic checks | Undefined variable reads, unreachable code, `WHILE` loops with no exit |
+| Markdown support | ` ```spl ` code blocks highlighted in `.md` files |
+
+See [`spl-llm/README.md`](spl-llm/README.md) for full documentation, settings, and release notes.
+
+---
+
+## Build from source
 
 ### Prerequisites
 
-Node.js (v18+) and npm are required. Check your versions:
-
-```bash
-node --version
-npm --version
-```
-
-### 1. Install vsce
-
-`vsce` is the VS Code Extension packaging tool. Install it globally:
+- Node.js v18+ and npm
+- `vsce` packaging tool:
 
 ```bash
 npm install -g @vscode/vsce
-vsce --version   # verify
+# or, without global install:
+npx @vscode/vsce package
 ```
 
-> On Ubuntu you may need to prefix with `sudo`, or configure npm to use a
-> user-local prefix to avoid permission errors:
->
+> On Ubuntu without sudo, configure a user-local npm prefix:
 > ```bash
 > mkdir -p ~/.npm-global
 > npm config set prefix '~/.npm-global'
@@ -33,30 +66,25 @@ vsce --version   # verify
 > npm install -g @vscode/vsce
 > ```
 
-### 2. Install dependencies and compile
+### Build and install
 
 ```bash
-cd /path/to/SPL-LLM/spl-llm
+cd spl-llm
 npm install          # install dev dependencies
 npm run compile      # type-check, lint, and bundle via esbuild
+vsce package         # produces spl-llm-<version>.vsix
+code --install-extension spl-llm-0.0.4.vsix
 ```
 
-### 3. Package the extension
+### One-liner (after vsce is installed)
 
 ```bash
-vsce package         # produces spl-llm-0.0.2.vsix in the current directory
+cd spl-llm && npm install && vsce package && code --install-extension spl-llm-0.0.4.vsix
 ```
 
-### 4. Install into VS Code
+---
 
-```bash
-code --install-extension spl-llm-0.0.2.vsix
-```
+## Related projects
 
-Then reload VS Code (`Ctrl+Shift+P` → **Developer: Reload Window**).
-
-### Quick one-liner (after vsce is installed)
-
-```bash
-cd spl-llm && npm install && vsce package && code --install-extension spl-llm-0.0.2.vsix
-```
+- **[SPL.py](https://github.com/digital-duck/SPL.py)** — SPL 3.0 runtime, compiler, and CLI (`spl3`)
+- **VibeSCOPE** — SPL Studio web app (Streamlit + FastAPI) for designing, running, and evaluating SPL workflows
