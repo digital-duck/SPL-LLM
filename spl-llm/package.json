@@ -1,19 +1,20 @@
 {
   "name": "spl-llm",
   "displayName": "SPL-LLM",
-  "description": "Declarative Context Management for LLMs via SPL - Structured Prompt Language",
+  "description": "SPL (Structured Prompt Language) — syntax highlighting, hover docs, and validate-on-save",
   "publisher": "digital-duck",
   "license": "Apache-2.0",
   "repository": {
     "type": "git",
     "url": "https://github.com/digital-duck/SPL.git"
   },
-  "version": "0.0.3",
+  "version": "0.0.4",
   "engines": {
     "vscode": "^1.108.0"
   },
   "categories": [
-    "Other"
+    "Programming Languages",
+    "Linters"
   ],
   "activationEvents": [
     "onLanguage:spl"
@@ -22,10 +23,34 @@
   "contributes": {
     "commands": [
       {
-        "command": "spl-llm.helloWorld",
-        "title": "Hello World"
+        "command": "spl-llm.validate",
+        "title": "SPL: Validate Current File"
+      },
+      {
+        "command": "spl-llm.validateSemantic",
+        "title": "SPL: Validate Current File (with semantic checks)"
       }
     ],
+    "configuration": {
+      "title": "SPL-LLM",
+      "properties": {
+        "spl-llm.validateOnSave": {
+          "type": "boolean",
+          "default": true,
+          "description": "Run spl3 validate automatically when an .spl file is saved."
+        },
+        "spl-llm.semanticValidation": {
+          "type": "boolean",
+          "default": true,
+          "description": "Include semantic checks (undefined variables, unreachable code, infinite loops) when validating."
+        },
+        "spl-llm.spl3Path": {
+          "type": "string",
+          "default": "spl3",
+          "description": "Path to the spl3 executable. Use an absolute path if spl3 is inside a conda env (e.g. /home/user/miniconda3/envs/spl123/bin/spl3)."
+        }
+      }
+    },
     "languages": [
       {
         "id": "spl",
