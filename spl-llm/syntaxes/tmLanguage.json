@@ -35,7 +35,7 @@
             ]
         },
         "function_body": {
-            "comment": "CREATE FUNCTION prompt body delimited by $$ ... $$. Only {param} slots are highlighted inside — the body is natural language, not SPL.",
+            "comment": "CREATE FUNCTION / CREATE TOOL_API body delimited by $$ ... $$. For FUNCTION bodies, {param} slots are highlighted. For TOOL_API bodies, the content is Python code.",
             "begin": "\\$\\$",
             "end": "\\$\\$",
             "beginCaptures": { "0": { "name": "punctuation.definition.heredoc.spl" } },
@@ -191,11 +191,19 @@
                     "match": "(?i)\\b(WORKFLOW|PROCEDURE|IMPORT|PROMPT)\\b"
                 },
                 {
-                    "comment": "CREATE FUNCTION / CREATE PROCEDURE",
-                    "match": "(?i)\\b(CREATE)\\s+(FUNCTION|PROCEDURE)\\b",
+                    "comment": "CREATE FUNCTION / CREATE PROCEDURE / CREATE TOOL_API",
+                    "match": "(?i)\\b(CREATE)\\s+(FUNCTION|PROCEDURE|TOOL_API)\\b",
                     "captures": {
                         "1": { "name": "keyword.declaration.spl" },
                         "2": { "name": "keyword.declaration.spl" }
+                    }
+                },
+                {
+                    "comment": "LANGUAGE PYTHON — implementation language in CREATE TOOL_API",
+                    "match": "(?i)\\b(LANGUAGE)\\s+(PYTHON|SQL|JAVASCRIPT)\\b",
+                    "captures": {
+                        "1": { "name": "keyword.other.spl" },
+                        "2": { "name": "support.constant.language.spl" }
                     }
                 },
                 {

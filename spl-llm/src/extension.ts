@@ -23,9 +23,41 @@ const HOVER_DOCS: Record<string, HoverEntry> = {
         example: "IMPORT 'lib/code_agents.spl'\nIMPORT '../shared/validators.spl'",
     },
     create: {
-        title: '🏗️ CREATE FUNCTION / CREATE PROCEDURE',
-        body: 'Defines a reusable prompt function with a `$$...$$` body.\n\n`{param}` slots in the body are filled at call time.',
-        example: "CREATE FUNCTION summarize({text}) RETURNS TEXT AS\n$$\nSummarize the following in 3 bullet points:\n{text}\n$$",
+        title: '🏗️ CREATE FUNCTION / CREATE PROCEDURE / CREATE TOOL_API',
+        body: 'Defines a reusable SPL definition. Three forms:\n\n' +
+              '• **`CREATE FUNCTION`** — LLM prompt template with `$$...$$` body; `{param}` slots filled at call time → probabilistic, calls `GENERATE` internally.\n\n' +
+              '• **`CREATE PROCEDURE`** — multi-step SPL sub-workflow; called via `CALL`.\n\n' +
+              '• **`CREATE TOOL_API`** — Python tool with `LANGUAGE PYTHON AS $$...$$` body; routed entirely to Python execution, never to the LLM → deterministic, reproducible. Closes the hybrid computation 2×2 matrix.',
+        example:
+            "-- Probabilistic: LLM handles this\n" +
+            "CREATE FUNCTION summarize({text}) RETURNS TEXT AS\n$$\nSummarize in 3 bullet points:\n{text}\n$$\n\n" +
+            "-- Deterministic: Python handles this\n" +
+            "CREATE TOOL_API stock_price(ticker TEXT) RETURNS FLOAT\n" +
+            "LANGUAGE PYTHON AS\n$$\nimport yfinance as yf\nreturn yf.Ticker(ticker).info['regularMarketPrice']\n$$",
+    },
+    tool_api: {
+        title: '🔧 CREATE TOOL_API',
+        body: 'Defines a deterministic Python tool that is routed **entirely away from the LLM**.\n\n' +
+              'The body (delimited by `$$...$$`) is plain Python. SPL\'s executor calls it via the TOOL_API registry at runtime — exact, reproducible, no token cost.\n\n' +
+              '**Regime principle:** Use `CREATE TOOL_API` for operations that have a single correct answer (fetch, parse, compute). Use `CREATE FUNCTION` for operations that require reasoning, judgment, or generation.\n\n' +
+              '**CLI registry commands:**\n' +
+              '• `spl3 tool-api list` — list all registered tools\n' +
+              '• `spl3 tool-api promote <name>` — promote a tool to the shared registry\n' +
+              '• `spl3 tool-api remove <name>` — remove from registry',
+        example:
+            "CREATE TOOL_API stock_price(ticker TEXT) RETURNS FLOAT\n" +
+            "LANGUAGE PYTHON AS\n" +
+            "$$\n" +
+            "import yfinance as yf\n" +
+            "return yf.Ticker(ticker).info['regularMarketPrice']\n" +
+            "$$\n\n" +
+            "-- Call it deterministically — never touches the LLM:\n" +
+            "CALL stock_price('AAPL') INTO @price",
+    },
+    language: {
+        title: '💻 LANGUAGE clause',
+        body: 'Specifies the implementation language for a `CREATE TOOL_API` body.\n\n`LANGUAGE PYTHON` is the supported form in SPL 3.0. The body follows `AS $$...$$`.',
+        example: "CREATE TOOL_API parse_csv(path TEXT) RETURNS LIST\nLANGUAGE PYTHON AS\n$$\nimport csv\nwith open(path) as f:\n    return list(csv.DictReader(f))\n$$",
     },
     // ── Control flow ──────────────────────────────────────────────────────────
     evaluate: {
@@ -246,9 +278,63 @@ function runValidate(document: vscode.TextDocument, semantic: boolean): void {
     });
 }
 
+// ─── Token-color bootstrap ────────────────────────────────────────────────────
+//
+// VS Code does not propagate extension configurationDefaults for
+// editor.tokenColorCustomizations into the active theme's tokenizer — that
+// setting is only honored when the user explicitly sets it in settings.json.
+// On first activation (or when our rules are missing) we inject the rules
+// ourselves so SPL keywords are always colored regardless of active theme.
+//
+// Rules are keyed by scope name and merged into the existing textMateRules
+// array.  We never remove or overwrite rules the user already has.
+
+const SPL_TOKEN_RULES: Array<{ scope: string; settings: Record<string, string> }> = [
+    { scope: 'keyword.declaration.spl',           settings: { foreground: '#E5C07B', fontStyle: 'bold' } },
+    { scope: 'keyword.declaration.parameter.spl', settings: { foreground: '#56B6C2' } },
+    { scope: 'keyword.control.flow.spl',          settings: { foreground: '#C678DD' } },
+    { scope: 'keyword.control.query.spl',         settings: { foreground: '#C678DD' } },
+    { scope: 'keyword.other.generate.spl',        settings: { foreground: '#61AFEF', fontStyle: 'bold' } },
+    { scope: 'keyword.other.spl',                 settings: { foreground: '#98C379' } },
+    { scope: 'variable.other.spl',                settings: { foreground: '#E06C75' } },
+    { scope: 'support.type.exception.spl',        settings: { foreground: '#E06C75', fontStyle: 'italic' } },
+    { scope: 'support.type.spl',                  settings: { foreground: '#56B6C2' } },
+    { scope: 'support.function.builtin.spl',      settings: { foreground: '#61AFEF' } },
+    { scope: 'support.function.tool.spl',         settings: { foreground: '#D19A66' } },
+    { scope: 'entity.name.type.model.spl',        settings: { foreground: '#D19A66', fontStyle: 'italic' } },
+    { scope: 'support.constant.log-level.spl',    settings: { foreground: '#98C379' } },
+    { scope: 'support.constant.language.spl',     settings: { foreground: '#D19A66' } },
+    { scope: 'string.unquoted.heredoc.spl',       settings: { foreground: '#98C379' } },
+    { scope: 'punctuation.definition.heredoc.spl',settings: { foreground: '#ABB2BF', fontStyle: 'bold' } },
+];
+
+async function ensureSplTokenColors(): Promise<void> {
+    const config = vscode.workspace.getConfiguration();
+    const existing = config.get<Record<string, unknown>>('editor.tokenColorCustomizations', {});
+    const existingRules: Array<Record<string, unknown>> =
+        Array.isArray(existing['textMateRules']) ? existing['textMateRules'] as Array<Record<string, unknown>> : [];
+
+    // Collect scopes already present so we don't overwrite user customisations
+    const existingScopes = new Set(existingRules.map(r => r['scope'] as string));
+    const missing = SPL_TOKEN_RULES.filter(r => !existingScopes.has(r.scope));
+
+    if (missing.length === 0) {
+        return; // nothing to do
+    }
+
+    const merged = { ...existing, textMateRules: [...existingRules, ...missing] };
+    await config.update('editor.tokenColorCustomizations', merged, vscode.ConfigurationTarget.Global);
+}
+
 // ─── Activation ───────────────────────────────────────────────────────────────
 
 export function activate(context: vscode.ExtensionContext): void {
+
+    // Inject SPL token colors into the user's settings.json if not already present.
+    // (configurationDefaults is silently ignored by VS Code for this setting.)
+    ensureSplTokenColors().catch(err =>
+        console.error('[SPL-LLM] Failed to set token colors:', err)
+    );
 
     // Hover provider
     context.subscriptions.push(

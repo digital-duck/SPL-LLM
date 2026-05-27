@@ -18,14 +18,14 @@ SPL-LLM/
 │   ├── syntaxes/         # TextMate grammar (tmLanguage.json) + Markdown injection
 │   ├── language-configuration.json
 │   ├── package.json
-│   └── spl-llm-0.0.4.vsix   # Latest packaged extension
+│   └── spl-llm-0.0.5.vsix   # Latest packaged extension
 └── tmLanguage.json       # Standalone grammar (for other editors)
 ```
 
 ## Quick install
 
 ```bash
-code --install-extension spl-llm/spl-llm-0.0.4.vsix
+code --install-extension spl-llm/spl-llm-0.0.5.vsix
 ```
 
 Reload VS Code (`Ctrl+Shift+P` → **Developer: Reload Window**).
@@ -34,8 +34,9 @@ Reload VS Code (`Ctrl+Shift+P` → **Developer: Reload Window**).
 
 | Feature | Details |
 |---------|---------|
-| Syntax highlighting | Keywords, `@variables`, `$$...$$` prompt bodies, f-strings, comments, built-in functions |
-| Hover docs | All SPL 3.0 keywords — description + usage example |
+| Syntax highlighting | Keywords, `@variables`, `$$...$$` bodies, f-strings, comments, built-in functions |
+| `CREATE TOOL_API` | New keyword + `LANGUAGE PYTHON` clause highlighted; deterministic Python tool pattern |
+| Hover docs | All SPL 3.0 keywords — description + usage example (incl. `CREATE TOOL_API`, `LANGUAGE`) |
 | Validate on save | Runs `spl3 validate` on every `.spl` save; shows inline squiggles |
 | Semantic checks | Undefined variable reads, unreachable code, `WHILE` loops with no exit |
 | Markdown support | ` ```spl ` code blocks highlighted in `.md` files |
@@ -73,13 +74,13 @@ cd spl-llm
 npm install          # install dev dependencies
 npm run compile      # type-check, lint, and bundle via esbuild
 vsce package         # produces spl-llm-<version>.vsix
-code --install-extension spl-llm-0.0.4.vsix
+code --install-extension spl-llm-0.0.5.vsix
 ```
 
 ### One-liner (after vsce is installed)
 
 ```bash
-cd spl-llm && npm install && vsce package && code --install-extension spl-llm-0.0.4.vsix
+cd spl-llm && npm install && vsce package && code --install-extension spl-llm-0.0.5.vsix
 ```
 
 ---

@@ -91,11 +91,19 @@
                     "match": "(?i)\\b(PROMPT|WORKFLOW|PROCEDURE)\\b"
                 },
                 {
-                    "comment": "CREATE FUNCTION / CREATE PROCEDURE",
-                    "match": "(?i)\\b(CREATE)\\s+(FUNCTION|PROCEDURE)\\b",
+                    "comment": "CREATE FUNCTION / CREATE PROCEDURE / CREATE TOOL_API",
+                    "match": "(?i)\\b(CREATE)\\s+(FUNCTION|PROCEDURE|TOOL_API)\\b",
                     "captures": {
                         "1": { "name": "keyword.declaration.spl" },
                         "2": { "name": "keyword.declaration.spl" }
+                    }
+                },
+                {
+                    "comment": "LANGUAGE PYTHON — implementation language in CREATE TOOL_API",
+                    "match": "(?i)\\b(LANGUAGE)\\s+(PYTHON|SQL|JAVASCRIPT)\\b",
+                    "captures": {
+                        "1": { "name": "keyword.other.spl" },
+                        "2": { "name": "support.constant.language.spl" }
                     }
                 },
                 {

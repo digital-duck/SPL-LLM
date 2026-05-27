@@ -1,106 +1,224 @@
 {
-  "name": "spl-llm",
-  "displayName": "SPL-LLM",
-  "description": "SPL (Structured Prompt Language) — syntax highlighting, hover docs, and validate-on-save",
-  "publisher": "digital-duck",
-  "license": "Apache-2.0",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/digital-duck/SPL.git"
-  },
-  "version": "0.0.4",
-  "engines": {
-    "vscode": "^1.108.0"
-  },
-  "categories": [
-    "Programming Languages",
-    "Linters"
-  ],
-  "activationEvents": [
-    "onLanguage:spl"
-  ],
-  "main": "./dist/extension.js",
-  "contributes": {
-    "commands": [
-      {
-        "command": "spl-llm.validate",
-        "title": "SPL: Validate Current File"
-      },
-      {
-        "command": "spl-llm.validateSemantic",
-        "title": "SPL: Validate Current File (with semantic checks)"
-      }
-    ],
-    "configuration": {
-      "title": "SPL-LLM",
-      "properties": {
-        "spl-llm.validateOnSave": {
-          "type": "boolean",
-          "default": true,
-          "description": "Run spl3 validate automatically when an .spl file is saved."
-        },
-        "spl-llm.semanticValidation": {
-          "type": "boolean",
-          "default": true,
-          "description": "Include semantic checks (undefined variables, unreachable code, infinite loops) when validating."
-        },
-        "spl-llm.spl3Path": {
-          "type": "string",
-          "default": "spl3",
-          "description": "Path to the spl3 executable. Use an absolute path if spl3 is inside a conda env (e.g. /home/user/miniconda3/envs/spl123/bin/spl3)."
-        }
-      }
+    "name": "spl-llm",
+    "displayName": "SPL-LLM",
+    "description": "SPL (Structured Prompt Language) \u2014 syntax highlighting, hover docs, and validate-on-save",
+    "publisher": "digital-duck",
+    "license": "Apache-2.0",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/digital-duck/SPL.git"
     },
-    "languages": [
-      {
-        "id": "spl",
-        "aliases": ["SPL", "SPL2", "spl2", "SPL3", "spl3", "Structured Prompt Language"],
-        "extensions": [".spl"],
-        "configuration": "./language-configuration.json"
-      }
+    "version": "0.0.5",
+    "engines": {
+        "vscode": "^1.108.0"
+    },
+    "categories": [
+        "Programming Languages",
+        "Linters"
     ],
-    "grammars": [
-      {
-        "language": "spl",
-        "scopeName": "source.spl",
-        "path": "./syntaxes/tmLanguage.json"
-      },
-      {
-        "scopeName": "markdown.spl.codeblock",
-        "path": "./syntaxes/markdown-spl.json",
-        "injectTo": ["text.html.markdown"],
-        "embeddedLanguages": {
-          "meta.embedded.block.spl":  "spl",
-          "meta.embedded.block.spl2": "spl",
-          "meta.embedded.block.spl3": "spl"
+    "activationEvents": [
+        "onLanguage:spl"
+    ],
+    "main": "./dist/extension.js",
+    "contributes": {
+        "commands": [
+            {
+                "command": "spl-llm.validate",
+                "title": "SPL: Validate Current File"
+            },
+            {
+                "command": "spl-llm.validateSemantic",
+                "title": "SPL: Validate Current File (with semantic checks)"
+            }
+        ],
+        "configuration": {
+            "title": "SPL-LLM",
+            "properties": {
+                "spl-llm.validateOnSave": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Run spl3 validate automatically when an .spl file is saved."
+                },
+                "spl-llm.semanticValidation": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Include semantic checks (undefined variables, unreachable code, infinite loops) when validating."
+                },
+                "spl-llm.spl3Path": {
+                    "type": "string",
+                    "default": "spl3",
+                    "description": "Path to the spl3 executable. Use an absolute path if spl3 is inside a conda env (e.g. /home/user/miniconda3/envs/spl123/bin/spl3)."
+                }
+            }
+        },
+        "languages": [
+            {
+                "id": "spl",
+                "aliases": [
+                    "SPL",
+                    "SPL2",
+                    "spl2",
+                    "SPL3",
+                    "spl3",
+                    "Structured Prompt Language"
+                ],
+                "extensions": [
+                    ".spl"
+                ],
+                "configuration": "./language-configuration.json"
+            }
+        ],
+        "grammars": [
+            {
+                "language": "spl",
+                "scopeName": "source.spl",
+                "path": "./syntaxes/tmLanguage.json"
+            },
+            {
+                "scopeName": "markdown.spl.codeblock",
+                "path": "./syntaxes/markdown-spl.json",
+                "injectTo": [
+                    "text.html.markdown"
+                ],
+                "embeddedLanguages": {
+                    "meta.embedded.block.spl": "spl",
+                    "meta.embedded.block.spl2": "spl",
+                    "meta.embedded.block.spl3": "spl"
+                }
+            }
+        ],
+        "configurationDefaults": {
+            "editor.tokenColorCustomizations": {
+                "textMateRules": [
+                    {
+                        "scope": "keyword.declaration.spl",
+                        "settings": {
+                            "foreground": "#E5C07B",
+                            "fontStyle": "bold"
+                        }
+                    },
+                    {
+                        "scope": "keyword.declaration.parameter.spl",
+                        "settings": {
+                            "foreground": "#56B6C2"
+                        }
+                    },
+                    {
+                        "scope": "keyword.control.flow.spl",
+                        "settings": {
+                            "foreground": "#C678DD"
+                        }
+                    },
+                    {
+                        "scope": "keyword.control.query.spl",
+                        "settings": {
+                            "foreground": "#C678DD"
+                        }
+                    },
+                    {
+                        "scope": "keyword.other.generate.spl",
+                        "settings": {
+                            "foreground": "#61AFEF",
+                            "fontStyle": "bold"
+                        }
+                    },
+                    {
+                        "scope": "keyword.other.spl",
+                        "settings": {
+                            "foreground": "#98C379"
+                        }
+                    },
+                    {
+                        "scope": "variable.other.spl",
+                        "settings": {
+                            "foreground": "#E06C75"
+                        }
+                    },
+                    {
+                        "scope": "support.type.exception.spl",
+                        "settings": {
+                            "foreground": "#E06C75",
+                            "fontStyle": "italic"
+                        }
+                    },
+                    {
+                        "scope": "support.type.spl",
+                        "settings": {
+                            "foreground": "#56B6C2"
+                        }
+                    },
+                    {
+                        "scope": "support.function.builtin.spl",
+                        "settings": {
+                            "foreground": "#61AFEF"
+                        }
+                    },
+                    {
+                        "scope": "support.function.tool.spl",
+                        "settings": {
+                            "foreground": "#D19A66"
+                        }
+                    },
+                    {
+                        "scope": "entity.name.type.model.spl",
+                        "settings": {
+                            "foreground": "#D19A66",
+                            "fontStyle": "italic"
+                        }
+                    },
+                    {
+                        "scope": "support.constant.log-level.spl",
+                        "settings": {
+                            "foreground": "#98C379"
+                        }
+                    },
+                    {
+                        "scope": "support.constant.language.spl",
+                        "settings": {
+                            "foreground": "#D19A66"
+                        }
+                    },
+                    {
+                        "scope": "string.unquoted.heredoc.spl",
+                        "settings": {
+                            "foreground": "#98C379"
+                        }
+                    },
+                    {
+                        "scope": "punctuation.definition.heredoc.spl",
+                        "settings": {
+                            "foreground": "#ABB2BF",
+                            "fontStyle": "bold"
+                        }
+                    }
+                ]
+            }
         }
-      }
-    ]
-  },
-  "scripts": {
-    "vscode:prepublish": "npm run package",
-    "compile": "npm run check-types && npm run lint && node esbuild.js",
-    "watch": "npm-run-all -p watch:*",
-    "watch:esbuild": "node esbuild.js --watch",
-    "watch:tsc": "tsc --noEmit --watch --project tsconfig.json",
-    "package": "npm run check-types && npm run lint && node esbuild.js --production",
-    "compile-tests": "tsc -p . --outDir out",
-    "watch-tests": "tsc -p . -w --outDir out",
-    "pretest": "npm run compile-tests && npm run compile && npm run lint",
-    "check-types": "tsc --noEmit",
-    "lint": "eslint src",
-    "test": "vscode-test"
-  },
-  "devDependencies": {
-    "@types/vscode": "^1.108.0",
-    "@types/mocha": "^10.0.10",
-    "@types/node": "22.x",
-    "typescript-eslint": "^8.54.0",
-    "eslint": "^9.39.2",
-    "esbuild": "^0.27.2",
-    "npm-run-all": "^4.1.5",
-    "typescript": "^5.9.3",
-    "@vscode/test-cli": "^0.0.12",
-    "@vscode/test-electron": "^2.5.2"
-  }
+    },
+    "scripts": {
+        "vscode:prepublish": "npm run package",
+        "compile": "npm run check-types && npm run lint && node esbuild.js",
+        "watch": "npm-run-all -p watch:*",
+        "watch:esbuild": "node esbuild.js --watch",
+        "watch:tsc": "tsc --noEmit --watch --project tsconfig.json",
+        "package": "npm run check-types && npm run lint && node esbuild.js --production",
+        "compile-tests": "tsc -p . --outDir out",
+        "watch-tests": "tsc -p . -w --outDir out",
+        "pretest": "npm run compile-tests && npm run compile && npm run lint",
+        "check-types": "tsc --noEmit",
+        "lint": "eslint src",
+        "test": "vscode-test"
+    },
+    "devDependencies": {
+        "@types/vscode": "^1.108.0",
+        "@types/mocha": "^10.0.10",
+        "@types/node": "22.x",
+        "typescript-eslint": "^8.54.0",
+        "eslint": "^9.39.2",
+        "esbuild": "^0.27.2",
+        "npm-run-all": "^4.1.5",
+        "typescript": "^5.9.3",
+        "@vscode/test-cli": "^0.0.12",
+        "@vscode/test-electron": "^2.5.2"
+    }
 }

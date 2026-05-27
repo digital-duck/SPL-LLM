@@ -12,8 +12,10 @@ natural-language intent and LLM execution visible and measurable.
 ### Syntax Highlighting
 Full TextMate grammar for `.spl` files:
 - Keywords: `WORKFLOW`, `GENERATE`, `CALL PARALLEL`, `EVALUATE`, `WHILE`, `IMPORT`, `COMMIT`, …
+- **`CREATE FUNCTION`** / **`CREATE PROCEDURE`** / **`CREATE TOOL_API`** — all three definition forms highlighted as declaration keywords
+- **`LANGUAGE PYTHON`** — implementation language clause for `CREATE TOOL_API` bodies
 - `@variables` and `:=` assignment
-- `$$...$$` prompt body heredocs with `{param}` slot highlighting
+- `$$...$$` heredoc bodies with `{param}` slot highlighting (prompt templates) or Python code (TOOL_API)
 - F-strings: `f"...{@var}..."`, `f"""..."""`
 - String literals (single, double, triple-quoted)
 - `-- line comments` and `/* block comments */`
@@ -37,12 +39,15 @@ Hover over any SPL keyword to see its description and a usage example. Coverage 
 | `FOR` | Iterate over a list |
 | `COMMIT` / `RETURN` | Exit the workflow and signal a status channel |
 | `RAISE` / `EXCEPTION` | Raise and catch named exceptions |
-| `IMPORT` | Multi-file workflow loading |
 | `INPUT` / `OUTPUT` | Parameter declarations |
 | `USING MODEL` | Per-call model override |
 | `BUDGET` | Token limit for a `GENERATE` call |
 | `RAG` / `MEMORY` / `CONTEXT` | Data access patterns |
 | `LOGGING LEVEL` | Structured log emission |
+| `CREATE FUNCTION` | Define a reusable LLM prompt template (probabilistic) |
+| `CREATE PROCEDURE` | Define a reusable multi-step sub-workflow |
+| `CREATE TOOL_API` | Define a deterministic Python tool — routed to Python, never to the LLM |
+| `LANGUAGE PYTHON` | Implementation language clause in `CREATE TOOL_API` |
 
 ### Validate on Save
 When you save an `.spl` file, the extension automatically runs `spl3 validate` and
@@ -106,21 +111,38 @@ Search for **SPL-LLM** in the Extensions panel (coming soon).
 ## SPL Language Quick Reference
 
 ```spl
--- Declare a workflow
-WORKFLOW summarize_article
-  INPUT:  @url TEXT
-  OUTPUT: @summary TEXT
+-- ── Deterministic tool: Python execution, never touches the LLM ──────────────
+CREATE TOOL_API stock_price(ticker TEXT) RETURNS FLOAT
+LANGUAGE PYTHON AS
+$$
+import yfinance as yf
+return yf.Ticker(ticker).info['regularMarketPrice']
+$$
 
-  -- Fetch and generate
-  CALL fetch_page(@url) INTO @content
-  GENERATE "Summarize in 3 bullet points: {@content}" INTO @summary
+-- ── Probabilistic function: LLM prompt template ───────────────────────────────
+CREATE FUNCTION summarize({text}) RETURNS TEXT AS
+$$
+Summarize the following in 3 bullet points:
+{text}
+$$
+
+-- ── Workflow: hybrid computation ─────────────────────────────────────────────
+WORKFLOW analyze_stock
+  INPUT:  @ticker TEXT
+  OUTPUT: @report TEXT
+
+  -- Deterministic fetch via TOOL_API (Python, exact)
+  CALL stock_price(@ticker) INTO @price
+
+  -- Probabilistic analysis via LLM
+  GENERATE "Stock {@ticker} is at ${@price}. Provide brief analyst commentary." INTO @report
     USING MODEL "claude-sonnet-4-6"
-    WITH BUDGET 1024 TOKENS
+    WITH BUDGET 512 TOKENS
 
   -- Conditional branching
-  EVALUATE @summary
+  EVALUATE @report
     WHEN = "" THEN RAISE QualityBelowThreshold
-    OTHERWISE   RETURN @summary WITH status="done"
+    OTHERWISE   RETURN @report WITH status="done"
   END
 
   EXCEPTION
@@ -136,6 +158,15 @@ For the full language reference see the
 ---
 
 ## Release Notes
+
+### 0.0.5
+- **`CREATE TOOL_API` syntax support** — new declaration keyword highlighted alongside `CREATE FUNCTION` and `CREATE PROCEDURE`
+- **`LANGUAGE PYTHON` clause** — highlighted as keyword + language constant in `CREATE TOOL_API` bodies
+- **Hover docs** for `CREATE TOOL_API`: full description of the deterministic Python tool pattern, regime principle, and `tool-api list/promote/remove` CLI commands
+- **Hover docs** for `LANGUAGE` clause
+- **Updated `create` hover** to document all three `CREATE` forms and the hybrid computation 2×2 matrix they complete
+- **Quick reference** updated with a hybrid computation example (TOOL_API + GENERATE in one workflow)
+- **Fixed: control-flow and generator keywords not highlighted** — added `configurationDefaults` with `editor.tokenColorCustomizations` TextMate rules so that `WHILE`, `CALL`, `GENERATE`, `END`, `RETURN`, `EXCEPTION`, `WHEN`, `THEN` are always colored regardless of the active theme. The root cause was theme scope-selector specificity: themes with explicit rules only for `keyword.declaration` left `keyword.control.flow.spl` and `keyword.other.generate.spl` uncolored
 
 ### 0.0.4
 - **Validate-on-save** with inline error/warning squiggles (`spl3 validate`)
